@@ -6,22 +6,22 @@ import kr.co.bootpay.model.response.data.*;
 
 import java.util.HashMap;
 
-public class Test {
+public class BootpayExample {
     static Bootpay bootpay;
     public static void main(String[] args) {
         bootpay = new Bootpay("5b8f6a4d396fa665fdc2b5ea", "rm6EYECr6aroQVG2ntW0A6LpWnkTgP4uQ3H18sDDUYw=");
 
         goGetToken();
+        goVerfity();
+        receiptCancel();
         getBillingKey();
         requestSubscribe();
         reserveSubscribe();
-        destroyBillingKey();
         reserveCancelSubscribe();
-        receiptCancel();
+        destroyBillingKey();
         getUserToken();
         requestLink();
         submit();
-        goVerfity();
         certificate();
     }
 
@@ -38,18 +38,18 @@ public class Test {
     }
 
     public static void getBillingKey() {
-        Subscribe subscribeBilling = new Subscribe();
-        subscribeBilling.itemName = "정기결제 테스트 아이템";
-        subscribeBilling.orderId = "" + (System.currentTimeMillis() / 1000);
-        subscribeBilling.pg = "nicepay";
-        subscribeBilling.cardNo = "5570**********1074"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribeBilling.cardPw = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribeBilling.expireYear = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribeBilling.expireMonth = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribeBilling.identifyNumber = ""; //주민등록번호 또는 사업자 등록번호 (- 없이 입력)
+        Subscribe subscribe = new Subscribe();
+        subscribe.itemName = "정기결제 테스트 아이템";
+        subscribe.orderId = "" + (System.currentTimeMillis() / 1000);
+        subscribe.pg = "nicepay";
+        subscribe.cardNo = "5570**********1074"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.cardPw = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.expireYear = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.expireMonth = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.identifyNumber = ""; //주민등록번호 또는 사업자 등록번호 (- 없이 입력)
 
         try {
-            ResDefault<BillingKeyData> res = bootpay.getBillingKey(subscribeBilling);
+            ResDefault<BillingKeyData> res = bootpay.getBillingKey(subscribe);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,6 +111,8 @@ public class Test {
         cancel.receiptId = "6100e77a019943003650f4d5";
         cancel.name = "관리자";
         cancel.reason = "테스트 결제";
+//        cancel.price = 1000.0; //부분취소 요청시 지정
+//        cancel.
 
 //        String receipt_id = "";
         try {
