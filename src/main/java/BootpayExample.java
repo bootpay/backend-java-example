@@ -27,7 +27,7 @@ public class BootpayExample {
 
     public static void goGetToken() {
         try {
-            ResDefault<TokenData> res = bootpay.getAccessToken();
+            ResDefault<HashMap<String, Object>> res = bootpay.getAccessToken();
 
 //            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
 //            ResToken resToken = new Gson().fromJson(str, ResToken.class);
@@ -49,7 +49,7 @@ public class BootpayExample {
         subscribe.identifyNumber = ""; //주민등록번호 또는 사업자 등록번호 (- 없이 입력)
 
         try {
-            ResDefault<BillingKeyData> res = bootpay.getBillingKey(subscribe);
+            ResDefault<HashMap<String, Object>> res = bootpay.getBillingKey(subscribe);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,7 +73,7 @@ public class BootpayExample {
         payload.orderId = "" + (System.currentTimeMillis() / 1000);
 
         try {
-            ResDefault<SubscribeBillingData> res = bootpay.requestSubscribe(payload);
+            ResDefault<HashMap<String, Object>> res = bootpay.requestSubscribe(payload);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,7 +90,7 @@ public class BootpayExample {
         payload.executeAt = (System.currentTimeMillis() / 1000) + 10000;
 
         try {
-            ResDefault<SubscribeBillingReserveData> res = bootpay.reserveSubscribe(payload);
+            ResDefault<HashMap<String, Object>> res = bootpay.reserveSubscribe(payload);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,7 +116,7 @@ public class BootpayExample {
 
 //        String receipt_id = "";
         try {
-            ResDefault<Cancel> res = bootpay.receiptCancel(cancel);
+            ResDefault<HashMap<String, Object>> res = bootpay.receiptCancel(cancel);
 //            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
             System.out.println(res.toJson());
         } catch (Exception e) {
@@ -128,7 +128,7 @@ public class BootpayExample {
         UserToken userToken = new UserToken();
         userToken.userId = "1234";
         try {
-            ResDefault<EasyUserTokenData> res = bootpay.getUserToken(userToken);
+            ResDefault<HashMap<String, Object>> res = bootpay.getUserToken(userToken);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,6 +155,7 @@ public class BootpayExample {
         try {
             ResDefault res = bootpay.requestLink(payload);
 //            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
+            System.out.println(res.data);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,8 +174,9 @@ public class BootpayExample {
 
     public static void goVerfity() {
         try {
-            ResDefault<VerificationData> res = bootpay.verify("6100e8e7019943003850f9b0");
+            ResDefault<HashMap<String, Object>> res = bootpay.verify("6100e8e7019943003850f9b0");
 //            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
+            System.out.println(res.data);
             System.out.println(res.toJson());
         } catch (Exception e) {
             e.printStackTrace();
@@ -184,7 +186,7 @@ public class BootpayExample {
     public static void certificate() {
 
         try {
-            ResDefault<CertificateData> res = bootpay.certificate("593f8febe13f332431a8ddae");
+            ResDefault<HashMap<String, Object>> res = bootpay.certificate("593f8febe13f332431a8ddae");
 //            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
             System.out.println(res.toJson());
         } catch (Exception e) {
