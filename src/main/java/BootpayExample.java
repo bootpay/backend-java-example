@@ -4,15 +4,19 @@ import kr.co.bootpay.model.request.*;
 import kr.co.bootpay.model.response.ResDefault;
 import kr.co.bootpay.model.response.data.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 public class BootpayExample {
     static Bootpay bootpay;
     public static void main(String[] args) {
+
         bootpay = new Bootpay("5b8f6a4d396fa665fdc2b5ea", "rm6EYECr6aroQVG2ntW0A6LpWnkTgP4uQ3H18sDDUYw=");
 
         goGetToken();
-        goVerfity();
+        getReceipt();
         receiptCancel();
         getBillingKey();
         requestSubscribe();
@@ -21,17 +25,19 @@ public class BootpayExample {
         destroyBillingKey();
         getUserToken();
         requestLink();
-        submit();
+        confirm();
         certificate();
+        shippingStart();
     }
 
     public static void goGetToken() {
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.getAccessToken();
-
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-//            ResToken resToken = new Gson().fromJson(str, ResToken.class);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.getAccessToken();
+            if(res.get("error_code") == null) { //success
+                System.out.println("goGetToken success: " + res);
+            } else {
+                System.out.println("goGetToken false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -39,27 +45,43 @@ public class BootpayExample {
 
     public static void getBillingKey() {
         Subscribe subscribe = new Subscribe();
-        subscribe.itemName = "정기결제 테스트 아이템";
-        subscribe.orderId = "" + (System.currentTimeMillis() / 1000);
-        subscribe.pg = "nicepay";
+        subscribe.orderName = "정기결제 테스트 아이템";
+        subscribe.subscriptionId = "" + (System.currentTimeMillis() / 1000);
+        subscribe.pg = "welcome";
         subscribe.cardNo = "5570**********1074"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
         subscribe.cardPw = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribe.expireYear = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribe.expireMonth = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-        subscribe.identifyNumber = ""; //주민등록번호 또는 사업자 등록번호 (- 없이 입력)
+        subscribe.cardExpireYear = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.cardExpireMonth = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
+        subscribe.cardIdentityNo = ""; //생년월일 또는 사업자 등록번호 (- 없이 입력)
+
+
+        subscribe.user = new User();
+        subscribe.user.username = "홍길동";
+        subscribe.user.phone = "01011112222";
+//        subscribe.extra = new SubscribeExtra();
+//        subscribe.extra.rawData = 1;
 
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.getBillingKey(subscribe);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.getBillingKey(subscribe);
+            if(res.get("error_code") == null) { //success
+                System.out.println("getBillingKey success: " + res);
+            } else {
+                System.out.println("getBillingKey false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void destroyBillingKey() {
+        String receiptId = "628b2644d01c7e00209b6092";
         try {
-            ResDefault res = bootpay.destroyBillingKey("6100e7ea0d681b001fd4de69");
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.destroyBillingKey(receiptId);
+            if(res.get("error_code") == null) { //success
+                System.out.println("destroyBillingKey success: " + res);
+            } else {
+                System.out.println("destroyBillingKey false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -67,14 +89,20 @@ public class BootpayExample {
 
     public static void requestSubscribe() {
         SubscribePayload payload = new SubscribePayload();
-        payload.billingKey = "6100e8c80d681b001dd4e0d7";
-        payload.itemName = "아이템01";
+        payload.billingKey = "62b3cbc0cf9f6d001bd20ceb";
+        payload.orderName = "아이템01";
         payload.price = 1000;
+        payload.user = new User();
+        payload.user.phone = "01012345678";
         payload.orderId = "" + (System.currentTimeMillis() / 1000);
 
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.requestSubscribe(payload);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.requestSubscribe(payload);
+            if(res.get("error_code") == null) { //success
+                System.out.println("requestSubscribe success: " + res);
+            } else {
+                System.out.println("requestSubscribe false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,24 +111,39 @@ public class BootpayExample {
     public static void reserveSubscribe() {
         SubscribePayload payload = new SubscribePayload();
 
-        payload.billingKey = "6100e77a0d681b002ad4e5d9";
-        payload.itemName = "아이템01";
+        payload.billingKey = "628b2644d01c7e00209b6092";
+        payload.orderName = "아이템01";
         payload.price = 1000;
         payload.orderId = "" + (System.currentTimeMillis() / 1000);
-        payload.executeAt = (System.currentTimeMillis() / 1000) + 10000;
+
+        Date now = new Date();
+        now.setTime(now.getTime() + 10 * 1000); //10초 뒤 결제
+//
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss XXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        payload.reserveExecuteAt = sdf.format(now); // 결제 승인 시점
 
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.reserveSubscribe(payload);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.reserveSubscribe(payload);
+            if(res.get("error_code") == null) { //success
+                System.out.println("reserveSubscribe success: " + res);
+            } else {
+                System.out.println("reserveSubscribe false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void reserveCancelSubscribe() {
+        String receiptId = "628b316cd01c7e00219b6081";
         try {
-            ResDefault res = bootpay.reserveCancelSubscribe("6100e892019943002150fef3");
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.reserveCancelSubscribe(receiptId);
+            if(res.get("error_code") == null) { //success
+                System.out.println("reserveCancelSubscribe success: " + res);
+            } else {
+                System.out.println("reserveCancelSubscribe false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,17 +151,24 @@ public class BootpayExample {
 
     public static void receiptCancel() {
         Cancel cancel = new Cancel();
-        cancel.receiptId = "6100e77a019943003650f4d5";
-        cancel.name = "관리자";
-        cancel.reason = "테스트 결제";
-//        cancel.price = 1000.0; //부분취소 요청시 지정
-//        cancel.
+        cancel.receiptId = "628b2206d01c7e00209b6087";
+        cancel.cancelUsername = "관리자";
+        cancel.cancelMessage = "테스트 결제";
+//        cancel.price = 1000.0; //부분취소 요청시
+//        cancel.cancelId = "12342134"; //부분취소 요청시, 중복 부분취소 요청하는 실수를 방지하고자 할때 지정
+//        RefundData refund = new RefundData(); // 가상계좌 환불 요청시, 단 CMS 특약이 되어있어야만 환불요청이 가능하다.
+//        refund.account = "675601012341234"; //환불계좌
+//        refund.accountholder = "홍길동"; //환불계좌주
+//        refund.bankcode = BankCode.getCode("국민은행");//은행코드
+//        cancel.refund = refund;
 
-//        String receipt_id = "";
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.receiptCancel(cancel);
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.receiptCancel(cancel);
+            if(res.get("error_code") == null) { //success
+                System.out.println("receiptCancel success: " + res);
+            } else {
+                System.out.println("receiptCancel false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -126,69 +176,105 @@ public class BootpayExample {
 
     public static void getUserToken() {
         UserToken userToken = new UserToken();
-        userToken.userId = "1234";
+        userToken.userId = "1234"; // 개발사에서 관리하는 회원 고유 번호
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.getUserToken(userToken);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.getUserToken(userToken);
+            if(res.get("error_code") == null) { //success
+                System.out.println("getUserToken success: " + res);
+            } else {
+                System.out.println("getUserToken false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @Deprecated
     public static void requestLink() {
         Payload payload = new Payload();
         payload.orderId = "1234";
-        payload.price = 1000;
-        payload.name = "테스트 결제";
-        payload.pg = "nicepay";
+        payload.price = 1000d;
+        payload.orderName = "테스트 결제";
+        payload.pg = "payapp";
+//        payload.method = "vbank";
 
+        User user = new User();
+        user.username = "홍길동";
+        user.phone = "01012341234";
+        payload.user = user;
 
-//        subscribeBilling.itemName = "정기결제 테스트 아이템";
-//        subscribeBilling.orderId = "" + (System.currentTimeMillis() / 1000);
-//        subscribeBilling.pg = "nicepay";
-//        subscribeBilling.cardNo = "5570**********1074"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-//        subscribeBilling.cardPw = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-//        subscribeBilling.expireYear = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-//        subscribeBilling.expireMonth = "**"; //실제 테스트시에는 *** 마스크처리가 아닌 숫자여야 함
-//        subscribeBilling.identifyNumber = ""; //주민등록번호 또는 사업자 등록번호 (- 없이 입력)
+        Extra extra = new Extra();
+        payload.extra = extra;
+
 
         try {
             ResDefault res = bootpay.requestLink(payload);
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-            System.out.println(res.data);
-            System.out.println(res.toJson());
+            System.out.println("requestLink:" + res.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void submit() {
+    public static void confirm() {
+        String receiptId = "62876963d01c7e00209b6028";
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.submit("6100e8e7019943003850f9b0");
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.confirm(receiptId);
+            if(res.get("error_code") == null) { //success
+                System.out.println("confirm success: " + res);
+            } else {
+                System.out.println("confirm false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void goVerfity() {
+    public static void getReceipt() {
+        String receiptId = "62b12f4b6262500007629fec";
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.verify("6100e8e7019943003850f9b0");
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-            System.out.println(res.data);
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.getReceipt(receiptId);
+            if(res.get("error_code") == null) { //success
+                System.out.println("getReceipt success: " + res);
+            } else {
+                System.out.println("getReceipt false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void certificate() {
-
+        String receiptId = "628ae7ffd01c7e001e9b6066";
         try {
-            ResDefault<HashMap<String, Object>> res = bootpay.certificate("593f8febe13f332431a8ddae");
-//            String str = IOUtils.toString(res.getEntity().getContent(), "UTF-8");
-            System.out.println(res.toJson());
+            HashMap<String, Object> res = bootpay.certificate(receiptId);
+            if(res.get("error_code") == null) { //success
+                System.out.println("certificate success: " + res);
+            } else {
+                System.out.println("certificate false: " + res);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void shippingStart() {
+        Shipping shipping = new Shipping();
+        shipping.receiptId = "628ae7ffd01c7e001e9b6066";
+        shipping.trackingNumber = "123456";
+        shipping.deliveryCorp = "CJ대한통운";
+        ShippingUser user = new ShippingUser();
+        user.username = "홍길동";
+        user.phone = "01000000000";
+        user.address = "서울특별시 종로구";
+        user.zipcode = "08490";
+        shipping.user = user;
+        try {
+            HashMap<String, Object> res = bootpay.shippingStart(shipping);
+            if(res.get("error_code") == null) { //success
+                System.out.println("certificate success: " + res);
+            } else {
+                System.out.println("certificate false: " + res);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
