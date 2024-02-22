@@ -16,18 +16,18 @@ public class BootpayExample {
         bootpay = new Bootpay("5b8f6a4d396fa665fdc2b5ea", "rm6EYECr6aroQVG2ntW0A6LpWnkTgP4uQ3H18sDDUYw=");
 
         goGetToken();
-        getReceipt();
-        receiptCancel();
-        getBillingKey();
-        requestSubscribe();
-        reserveSubscribe();
-        reserveCancelSubscribe();
-        destroyBillingKey();
-        getUserToken();
-        requestLink();
-        confirm();
-        certificate();
-        shippingStart();
+//        getReceipt();
+//        receiptCancel();
+//        getBillingKey();
+//        requestSubscribe();
+//        reserveSubscribe();
+//        reserveCancelSubscribe();
+//        destroyBillingKey();
+//        getUserToken();
+//        requestLink();
+//        confirm();
+//        certificate();
+//        shippingStart();
     }
 
     public static void goGetToken() {
