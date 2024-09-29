@@ -15,7 +15,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
 
-    implementation 'io.github.bootpay:backend:2.2.3'
+    implementation 'io.github.bootpay:backend:2.3.3'
+//    implementation 'io.github.bootpay:backend-java:1.0.0'
+
+
 }
 
 test {

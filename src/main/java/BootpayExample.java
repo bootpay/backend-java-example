@@ -4,6 +4,8 @@ import kr.co.bootpay.model.request.*;
 import kr.co.bootpay.model.response.ResDefault;
 import kr.co.bootpay.model.response.data.*;
 
+//import kr.co.bootpay.*
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ public class BootpayExample {
 //        getReceipt();
 //        receiptCancel();
 //        getBillingKey();
-//        requestSubscribe();
+        requestSubscribe();
 //        reserveSubscribe();
 //        reserveCancelSubscribe();
 //        destroyBillingKey();
@@ -55,11 +57,12 @@ public class BootpayExample {
         subscribe.cardIdentityNo = ""; //생년월일 또는 사업자 등록번호 (- 없이 입력)
 
 
+
         subscribe.user = new User();
         subscribe.user.username = "홍길동";
         subscribe.user.phone = "01011112222";
-//        subscribe.extra = new SubscribeExtra();
-//        subscribe.extra.rawData = 1;
+        subscribe.extra = new SubscribeExtra();
+        subscribe.extra.subscribeTestPayment = 1;
 
         try {
             HashMap<String, Object> res = bootpay.getBillingKey(subscribe);
@@ -89,7 +92,7 @@ public class BootpayExample {
 
     public static void requestSubscribe() {
         SubscribePayload payload = new SubscribePayload();
-        payload.billingKey = "62b3cbc0cf9f6d001bd20ceb";
+        payload.billingKey = "66f9da41e1afdbe0495e6526";
         payload.orderName = "아이템01";
         payload.price = 1000;
         payload.user = new User();
@@ -151,9 +154,9 @@ public class BootpayExample {
 
     public static void receiptCancel() {
         Cancel cancel = new Cancel();
-        cancel.receiptId = "628b2206d01c7e00209b6087";
-        cancel.cancelUsername = "관리자";
-        cancel.cancelMessage = "테스트 결제";
+        cancel.receiptId = "664ae6621a10a75af2b4b085";
+        cancel.cancelUsername = "관리자3";
+        cancel.cancelMessage = "테스트 결제3";
 //        cancel.price = 1000.0; //부분취소 요청시
 //        cancel.cancelId = "12342134"; //부분취소 요청시, 중복 부분취소 요청하는 실수를 방지하고자 할때 지정
 //        RefundData refund = new RefundData(); // 가상계좌 환불 요청시, 단 CMS 특약이 되어있어야만 환불요청이 가능하다.
@@ -163,6 +166,7 @@ public class BootpayExample {
 //        cancel.refund = refund;
 
         try {
+//            ResDefault
             HashMap<String, Object> res = bootpay.receiptCancel(cancel);
             if(res.get("error_code") == null) { //success
                 System.out.println("receiptCancel success: " + res);
